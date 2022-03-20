@@ -10,7 +10,7 @@ OBJS=
 
 all: $(OBJS) $(PROGS)
 
-j_shell: main.c $(OBJS)
+j_shell: main.c term.h $(OBJS)
 	$(CC) $(CFLAGS) $(DFLAGS) $< -o $@ $(OBJS)
 
 clean:

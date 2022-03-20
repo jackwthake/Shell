@@ -1,24 +1,9 @@
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include <printf.h>
 
-#define abort(M, ...) printf(M, ##__VA_ARGS__); exit(-1);
-#define UNUSED(x) (void)(x)
-
-#define MAX_BUF 200
-#define MAX_ARGS 20
-
-#define KNRM  "\x1B[0m"
-#define KRED  "\x1B[31m"
-#define KGRN  "\x1B[32m"
-#define KYEL  "\x1B[33m"
-#define KBLU  "\x1B[34m"
-#define KMAG  "\x1B[35m"
-#define KCYN  "\x1B[36m"
-#define KWHT  "\x1B[37m"
-
-extern char **environ;
+#include "term.h"
 
 int parse_line(char *buf, char **argv, int *argc) {
     int argv_ind = 0;    
@@ -73,7 +58,7 @@ void eval(char *cmd_buf) {
             abort("waitpid error\n");
         }
 
-        printf("%s%d exited with code %d.%s\n", KRED, pid, status, KNRM);
+        printf(RED "%d exited with code %d.\n" RESET, pid, status);
     } else {
         printf("Background process %d: %s\n", pid, argv[0]);
     }
@@ -84,7 +69,7 @@ int main(int argc, char **argv) {
 
     for (;;) {
         char *wd = getcwd(NULL, 0);
-        printf("[%s %s %s] $ ", KGRN, wd, KNRM);
+        printf("[ " GRN "%s" RESET " ] $ ", wd);
         free(wd);
 
         /* get next input line */
