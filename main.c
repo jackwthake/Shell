@@ -9,11 +9,23 @@
 #define MAX_BUF 200
 #define MAX_ARGS 20
 
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KWHT  "\x1B[37m"
+
 extern char **environ;
 
 int parse_line(char *buf, char **argv, int *argc) {
     int argv_ind = 0;    
     char *token = strtok(buf, " ");
+
+    if (*buf == '\n')
+        return 0;
 
     while (token) { /* tokenize arguments */
         if (argv_ind == MAX_ARGS - 1) {
@@ -46,7 +58,7 @@ void eval(char *cmd_buf) {
     pid_t pid;
     int argc, bg = parse_line(cmd_buf, argv, &argc);
 
-    if (argv[0] == NULL) /* don't attempt to run empty line */
+    if (argv[0] == NULL || argc == 0) /* don't attempt to run empty line */
         return;
 
     if ((pid = fork()) == 0) { /* fork and then run in child process */
@@ -56,9 +68,12 @@ void eval(char *cmd_buf) {
     }
 
     if (!bg) { /* allow things to run in the background */
-        if (waitpid(pid, NULL, 0) < 0) {
+        int status;
+        if (waitpid(pid, &status, 0) < 0) {
             abort("waitpid error\n");
         }
+
+        printf("%s%d exited with code %d.%s\n", KRED, pid, status, KNRM);
     } else {
         printf("Background process %d: %s\n", pid, argv[0]);
     }
@@ -69,13 +84,15 @@ int main(int argc, char **argv) {
 
     for (;;) {
         char *wd = getcwd(NULL, 0);
-        printf("%s $ ", wd);
+        printf("[%s %s %s] $ ", KGRN, wd, KNRM);
         free(wd);
 
+        /* get next input line */
         if ((fgets(cmd_buf, MAX_BUF, stdin) != cmd_buf) && feof(stdin)) {
             abort("Encountered error in STDIN\n");
         }
 
+        /* check for exit, TODO: build in some commands in a cleaner way */
         if (strncmp(cmd_buf, "exit\n", 5) == 0) {
             break;
         }
