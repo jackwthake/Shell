@@ -6,12 +6,15 @@ DFLAGS=-ggdb
 endif
 
 PROGS=j_shell
-OBJS=
+OBJS=command.o
 
 all: $(OBJS) $(PROGS)
 
-j_shell: src/main.c src/term.h $(OBJS)
+j_shell: src/main.c $(OBJS)
 	$(CC) $(CFLAGS) $(DFLAGS) $< -o $@ $(OBJS)
+
+command.o: src/command.c
+	$(CC) $(CFLAGS) $(DFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(PROGS) *.o ~*
